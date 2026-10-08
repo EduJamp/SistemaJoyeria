@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JpaBuddyIdeaProjectConfig">
+    <option name="reLastEntityCreationPackage" value="src/main/java/com/liamyimport/model" />
+    <option name="reverseEngineeringLastDbConnectionId" value="1b4fd6c7-74ba-422a-9c96-f6d24d3d7997" />
+  </component>
+  <component name="JpaPluginProjectSettings" isShowLibraryClassesInOrmView="true" />
+</project>
