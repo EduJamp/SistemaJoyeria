@@ -1,7 +1,9 @@
 package com.liamyimport.controller;
 
-import com.liamyimport.model.Sede;
+import com.liamyimport.facade.interfaces.ISedeFacade;
+import com.liamyimport.facade.SedeFacade;
 import com.liamyimport.model.Usuario;
+import com.liamyimport.model.dto.SedeDTO;
 import com.liamyimport.util.enums.State;
 
 import jakarta.servlet.ServletException;
@@ -12,29 +14,34 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet("/svsede")
 public class SvSede extends HttpServlet {
 
-    private static List<Sede> listaSedes = new ArrayList<>();
+    private ISedeFacade sedeFacade = new SedeFacade();
 
     @Override
     public void init() throws ServletException {
         super.init();
-        if (listaSedes.isEmpty()) {
-            listaSedes.add(new Sede(1, "Sede Central", "Av. Javier Prado 123", "Lima", "987654321", true, State.activo));
-            listaSedes.add(new Sede(2, "Miraflores", "Av. Larco 456", "Lima", "912345678", false, State.activo));
-        }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setAttribute("sedesList", listaSedes);
+        String criterio = request.getParameter("criterio");
+        List<SedeDTO> listaSedes;
 
+        if (criterio != null && !criterio.trim().isEmpty()) {
+            SedeDTO dto = new SedeDTO();
+            dto.setNombre(criterio); //facade extrae el criterio desde el atributo 'nombre'
+            listaSedes = sedeFacade.searchSedes(dto);
+        } else {
+            listaSedes = sedeFacade.getSedes();
+        }
+
+        request.setAttribute("sedesList", listaSedes);
         HttpSession session = request.getSession(false);
         String vistaDestino = "index.jsp";
 
@@ -84,36 +91,35 @@ public class SvSede extends HttpServlet {
     }
 
     private void crearSede(HttpServletRequest request) {
-        int nuevoId = listaSedes.size() + 1;
-        String nombre = request.getParameter("nombre");
-        String direccion = request.getParameter("direccion");
-        String ciudad = request.getParameter("ciudad");
-        String telefono = request.getParameter("telefono");
-        boolean esPrincipal = request.getParameter("esPrincipal") != null;
+        SedeDTO dto = new SedeDTO();
+        dto.setNombre(request.getParameter("nombre"));
+        dto.setDireccion(request.getParameter("direccion"));
+        dto.setCiudad(request.getParameter("ciudad"));
+        dto.setTelefono(request.getParameter("telefono"));
+        dto.setEsPrincipal(request.getParameter("esPrincipal") != null);
+        dto.setEstado(parsearEstado(request.getParameter("estado")));
 
-        State estado = parsearEstado(request.getParameter("estado"));
-
-        listaSedes.add(new Sede(nuevoId, nombre, direccion, ciudad, telefono, esPrincipal, estado));
+        // Delegamos la creación al Facade
+        sedeFacade.createSede(dto);
     }
 
     private void actualizarSede(HttpServletRequest request) {
-        int id = Integer.parseInt(request.getParameter("id"));
-        for (Sede s : listaSedes) {
-            if (s.getId() == id) {
-                s.setNombre(request.getParameter("nombre"));
-                s.setDireccion(request.getParameter("direccion"));
-                s.setCiudad(request.getParameter("ciudad"));
-                s.setTelefono(request.getParameter("telefono"));
-                s.setEsPrincipal(request.getParameter("esPrincipal") != null);
-                s.setEstado(parsearEstado(request.getParameter("estado")));
-                break;
-            }
-        }
+        SedeDTO dto = new SedeDTO();
+        dto.setId(Integer.parseInt(request.getParameter("id")));
+        dto.setNombre(request.getParameter("nombre"));
+        dto.setDireccion(request.getParameter("direccion"));
+        dto.setCiudad(request.getParameter("ciudad"));
+        dto.setTelefono(request.getParameter("telefono"));
+        dto.setEsPrincipal(request.getParameter("esPrincipal") != null);
+        dto.setEstado(parsearEstado(request.getParameter("estado")));
+
+        sedeFacade.modifySede(dto);
     }
 
     private void eliminarSede(HttpServletRequest request) {
         int id = Integer.parseInt(request.getParameter("id"));
-        listaSedes.removeIf(s -> s.getId() == id);
+
+        sedeFacade.deleteSede(id);
     }
 
     private State parsearEstado(String valor) {

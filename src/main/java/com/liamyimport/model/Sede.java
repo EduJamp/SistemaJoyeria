@@ -40,7 +40,7 @@ public class Sede {
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
 
-    public boolean isEsPrincipal() { return esPrincipal; }
+    public boolean getEsPrincipal() { return esPrincipal; }
     public void setEsPrincipal(boolean esPrincipal) { this.esPrincipal = esPrincipal; }
 
     public State getEstado() { return estado; }
