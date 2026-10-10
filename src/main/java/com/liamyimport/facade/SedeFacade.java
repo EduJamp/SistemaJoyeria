@@ -40,12 +40,12 @@ public class SedeFacade implements ISedeFacade {
     @Override
     public List<SedeDTO> searchSedes(SedeDTO dto) {
         try {
-            String criterio = (dto != null && dto.getNombre() != null) ? dto.getNombre() : "";
+            String criterio = ( dto != null && dto.getNombre() != null ) ? dto.getNombre() : "";
 
-            List<Sede> sedes = sedeDAO.searchSede(criterio);
+            List<Sede> sedes = sedeDAO.searchSede( criterio );
 
             return sedes.stream()
-                    .map(SedeMapper::toDTO)
+                    .map( SedeMapper::toDTO )
                     .toList();
 
         } catch (SQLException e) {

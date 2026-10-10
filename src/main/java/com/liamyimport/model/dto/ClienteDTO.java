@@ -1,11 +1,13 @@
-package com.liamyimport.model;
+package com.liamyimport.model.dto;
 
+import com.liamyimport.model.Persona;
 import com.liamyimport.util.enums.State;
 import com.liamyimport.util.enums.TypeIdentityDocument;
 
 import java.time.LocalDate;
+import java.util.Date;
 
-public class Cliente extends Persona {
+public class ClienteDTO extends Persona {
     private int id_cliente;
     private String email;
     private String tipoCliente;
@@ -14,12 +16,12 @@ public class Cliente extends Persona {
     private double totalComprado;
     private LocalDate ultimaCompra;
 
-    public Cliente() {
+    public ClienteDTO() {
     }
 
-    public Cliente(String nombre, String apellido, TypeIdentityDocument tipoDocumento, int numeroDocumento,
-                   int telefono, String direccion, LocalDate fechaNacimiento, int id_cliente, String email, String tipoCliente,
-                   State estado, int numeroCompras, double totalComprado, LocalDate ultimaCompra) {
+    public ClienteDTO(String nombre, String apellido, TypeIdentityDocument tipoDocumento, int numeroDocumento,
+                      int telefono, String direccion, LocalDate fechaNacimiento, int id_cliente, String email, String tipoCliente,
+                      State estado, int numeroCompras, double totalComprado, LocalDate ultimaCompra) {
         super(nombre, apellido, tipoDocumento, numeroDocumento, telefono, direccion, fechaNacimiento);
         this.id_cliente = id_cliente;
         this.email = email;

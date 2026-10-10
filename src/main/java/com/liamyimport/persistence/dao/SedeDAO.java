@@ -13,8 +13,6 @@ import java.util.Optional;
 
 public class SedeDAO implements ISedeDAO {
 
-    private final Connection connection = ConexionBD.getInstancia().getConexion();
-
     public SedeDAO() {
     }
 
@@ -23,7 +21,8 @@ public class SedeDAO implements ISedeDAO {
         String sql = "insert into Sede( nombre, direccion, ciudad, telefono, es_principal, estado )" +
                 "values( ?, ? ,? ,? ,? ,? )";
 
-        try(PreparedStatement ps = connection.prepareStatement(sql,  Statement.RETURN_GENERATED_KEYS)) {
+        try( Connection connection = ConexionBD.getInstancia().getConexion();
+             PreparedStatement ps = connection.prepareStatement( sql,  Statement.RETURN_GENERATED_KEYS ) ) {
             ps.setString(1, sede.getNombre());
             ps.setString(2, sede.getDireccion());
             ps.setString(3, sede.getCiudad());
@@ -48,7 +47,8 @@ public class SedeDAO implements ISedeDAO {
     @Override
     public Sede getSedeById(int id) throws SQLException {
         String sql = "select * from Sede where id_sede = ?";
-        try ( PreparedStatement ps = connection.prepareStatement(sql) ) {
+        try ( Connection connection = ConexionBD.getInstancia().getConexion();
+              PreparedStatement ps = connection.prepareStatement(sql) ) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -63,11 +63,12 @@ public class SedeDAO implements ISedeDAO {
     public List<Sede> getAllSedes() throws SQLException {
         List<Sede> sedes = new ArrayList<>();
         Sede sede = new Sede();
-        String sql = "select * from Sede";
+        String sql = " select * from Sede ";
 
-        try( PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery() ) {
+        try( Connection connection = ConexionBD.getInstancia().getConexion();
+             PreparedStatement ps = connection.prepareStatement( sql ); ResultSet rs = ps.executeQuery() ) {
             while ( rs.next() ) {
-                sedes.add(mapearSede(rs));
+                sedes.add( mapearSede( rs ) );
             }
             return sedes; // retornamos la lista
         }
@@ -75,9 +76,10 @@ public class SedeDAO implements ISedeDAO {
 
     @Override
     public boolean updateSede(Sede sede) throws SQLException {
-        String sql = "update Sede set nombre=?, direccion=?, ciudad=?, telefono=?, es_principal=?, estado=? where id_sede=?";
+        String sql = " update Sede set nombre=?, direccion=?, ciudad=?, telefono=?, es_principal=?, estado=? where id_sede=? ";
 
-        try( PreparedStatement ps = connection.prepareStatement(sql) ) {
+        try( Connection connection = ConexionBD.getInstancia().getConexion();
+             PreparedStatement ps = connection.prepareStatement( sql ) ) {
             ps.setString(1, sede.getNombre());
             ps.setString(2, sede.getDireccion());
             ps.setString(3, sede.getCiudad());
@@ -95,7 +97,8 @@ public class SedeDAO implements ISedeDAO {
     @Override
     public boolean deleteSede(int id) throws SQLException {
         String sql = "delete from Sede where id_sede = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = ConexionBD.getInstancia().getConexion();
+             PreparedStatement ps = connection.prepareStatement( sql ) ) {
             ps.setInt(1, id);
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -107,7 +110,8 @@ public class SedeDAO implements ISedeDAO {
         List<Sede> sedes = new ArrayList<>();
         Sede sede = new Sede();
         String sql = "select * from Sede where CAST(id_sede as text) ilike ? or nombre ilike ? or direccion ilike ? or ciudad ilike ? order by id_sede desc";
-        try( PreparedStatement ps = connection.prepareStatement(sql) ) {
+        try( Connection connection = ConexionBD.getInstancia().getConexion();
+             PreparedStatement ps = connection.prepareStatement(sql) ) {
             String patron = "%" + criterio + "%";
             ps.setString(1, patron);
             ps.setString(2, patron);
