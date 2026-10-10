@@ -1,8 +1,9 @@
 package com.liamyimport.controller;
 
-import com.liamyimport.model.Categoria;
+import com.liamyimport.facade.CategoriaFacade;
+import com.liamyimport.facade.interfaces.ICategoriaFacade;
 import com.liamyimport.model.Usuario;
-import com.liamyimport.util.csv.CategoriaRepository;
+import com.liamyimport.model.dto.CategoriaDTO;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,34 +18,41 @@ import java.util.List;
 @WebServlet("/svcategoria")
 public class SvCategoria extends HttpServlet {
 
-    private CategoriaRepository repo;
+    private ICategoriaFacade categoriaFacade;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        repo = new CategoriaRepository();
+        categoriaFacade = new CategoriaFacade();
     }
 
     @Override
-    protected void doGet(
-            HttpServletRequest request,
-            HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<Categoria> listaCategorias = repo.obtenerTodos();
+        request.setAttribute("vistaActiva", "categorias");
+
+        String criterio = request.getParameter("criterio");
+        List<CategoriaDTO> listaCategorias;
+
+        if (criterio != null && !criterio.trim().isEmpty()) {
+            CategoriaDTO dtoBusqueda = new CategoriaDTO(0, criterio, null);
+            listaCategorias = categoriaFacade.searchCategorias(dtoBusqueda);
+        } else {
+            listaCategorias = categoriaFacade.getCategorias();
+        }
+
         request.setAttribute("categorias", listaCategorias);
 
         HttpSession session = request.getSession(false);
         String vistaDestino = "index.jsp";
 
         if (session != null && session.getAttribute("usuarioLogueado") != null) {
-
             Usuario userLogueado = (Usuario) session.getAttribute("usuarioLogueado");
 
             switch (userLogueado.getRol()) {
                 case ADMINISTRADOR:
                     vistaDestino = "view/admin_vista.jsp";
-                    request.setAttribute("vistaActiva", "categorias"); // Indicamos que se active la vista de categorías
                     break;
                 case VENDEDOR:
                     vistaDestino = "view/vendedor_categorias.jsp";
@@ -55,31 +63,59 @@ public class SvCategoria extends HttpServlet {
             }
 
             request.getRequestDispatcher(vistaDestino).forward(request, response);
-
         } else {
             response.sendRedirect(vistaDestino);
         }
     }
 
     @Override
-    protected void doPost(
-            HttpServletRequest request,
-            HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String accion = request.getParameter("accion");
 
-        if ("crear".equals(accion)) {
-            String nombre = request.getParameter("nombre");
-            String descripcion = request.getParameter("descripcion");
-
-            Categoria c = new Categoria();
-            c.setNombre(nombre);
-            c.setDescripcion(descripcion);
-
-            repo.agregar(c);
+        if (accion != null) {
+            switch (accion) {
+                case "crear":
+                    crearCategoria(request);
+                    break;
+                case "actualizar":
+                    actualizarCategoria(request);
+                    break;
+                case "eliminar":
+                    eliminarCategoria(request);
+                    break;
+            }
         }
 
         response.sendRedirect("svcategoria");
+    }
+
+    private void crearCategoria(HttpServletRequest request) {
+        String nombre = request.getParameter("nombre");
+        String descripcion = request.getParameter("descripcion");
+
+        CategoriaDTO dto = new CategoriaDTO(0, nombre, descripcion);
+        categoriaFacade.createCategoria(dto);
+    }
+
+    private void actualizarCategoria(HttpServletRequest request) {
+        String idParam = request.getParameter("id");
+        String nombre = request.getParameter("nombre");
+        String descripcion = request.getParameter("descripcion");
+
+        if (idParam != null && !idParam.isEmpty()) {
+            int id = Integer.parseInt(idParam);
+            CategoriaDTO dto = new CategoriaDTO(id, nombre, descripcion);
+            categoriaFacade.modifyCategoria(dto);
+        }
+    }
+
+    private void eliminarCategoria(HttpServletRequest request) {
+        String idParam = request.getParameter("id");
+        if (idParam != null && !idParam.isEmpty()) {
+            int id = Integer.parseInt(idParam);
+            categoriaFacade.deleteCategoria(id);
+        }
     }
 }
