@@ -52,6 +52,9 @@
             <a href="${pageContext.request.contextPath}/svcategoria" class="submenu-link view-link" data-view="categorias">Categorías</a>
           </li>
           <li>
+            <a href="${pageContext.request.contextPath}/svmetodopago" class="submenu-link view-link" data-view="metodospago">Metodos de Pago</a>
+          </li>
+          <li>
             <a href="${pageContext.request.contextPath}/svauditoriainventario" class="submenu-link view-link" data-view="auditoria-inventario">Auditoria de Inventario</a>
           </li>
         </ul>

@@ -8,6 +8,7 @@
     boolean esDashboard = (vistaActiva == null || vistaActiva.isEmpty());
     boolean esProductos = "productos".equals(vistaActiva);
     boolean esCategorias = "categorias".equals(vistaActiva);
+    boolean esMetodosPago = "metodospago".equals(vistaActiva);
     boolean esAuditoria = "auditoria-inventario".equals(vistaActiva);
     boolean esSedes = "sedes".equals(vistaActiva);
     boolean esPromocion = "promociones".equals(request.getAttribute("vistaActiva"));
@@ -535,6 +536,9 @@
 
         <!-- VISTA CATEGORÍAS -->
         <jsp:include page="/view/admin_vistas/VCategoria.jsp" />
+
+        <!-- VISTA METODOS DE PAGO -->
+        <jsp:include page="/view/admin_vistas/VMetodoPago.jsp" />
 
         <!-- AUDITORIA DE INVENTARIO -->
         <jsp:include page="/view/admin_vistas/VAuditoriaInventario.jsp" />
