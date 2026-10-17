@@ -1,55 +1,115 @@
 package com.liamyimport.model;
 
+import com.liamyimport.util.enums.StatePromotion;
+
+import java.time.LocalDate;
+
 public class Promocion {
-    private int id;
+    private int idPromocion;
     private String nombre;
-    private String tipo; // Descuento, Combo, 2 + 1, etc.
-    private String estado; // Activa, Inactiva, Por vencer, Programada
+    private StatePromotion estado;
     private String descripcion;
-    private String fechaInicio;
-    private String fechaFin;
-    private String sede;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
+    private double porcentajeDescuento;
     private String colorFondo;
+    private int sede;
+    private String nombre_sede;
 
     public Promocion() {}
 
-    public Promocion(int id, String nombre, String tipo, String estado, String descripcion, String fechaInicio,
-                     String fechaFin, String sede, String colorFondo) {
-        this.id = id;
+    public Promocion(int idPromocion, String nombre, StatePromotion estado, String descripcion,
+                     LocalDate fechaInicio, LocalDate fechaFin, double porcentajeDescuento, String colorFondo, int sede,
+                     String nombre_sede) {
+        this.idPromocion = idPromocion;
         this.nombre = nombre;
-        this.tipo = tipo;
         this.estado = estado;
         this.descripcion = descripcion;
         this.fechaInicio = fechaInicio;
         this.fechaFin = fechaFin;
+        this.porcentajeDescuento = porcentajeDescuento;
+        this.colorFondo = colorFondo;
         this.sede = sede;
+        this.nombre_sede = nombre_sede;
+    }
+
+    public int getIdPromocion() {
+        return idPromocion;
+    }
+
+    public void setIdPromocion(int idPromocion) {
+        this.idPromocion = idPromocion;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public StatePromotion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(StatePromotion estado) {
+        this.estado = estado;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public LocalDate getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(LocalDate fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public double getPorcentajeDescuento() {
+        return porcentajeDescuento;
+    }
+
+    public void setPorcentajeDescuento(double porcentajeDescuento) {
+        this.porcentajeDescuento = porcentajeDescuento;
+    }
+
+    public String getColorFondo() {
+        return colorFondo;
+    }
+
+    public void setColorFondo(String colorFondo) {
         this.colorFondo = colorFondo;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getSede() {
+        return sede;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setSede(int sede) {
+        this.sede = sede;
+    }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getNombre_sede() {
+        return nombre_sede;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
-
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
-
-    public String getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(String fechaInicio) { this.fechaInicio = fechaInicio; }
-
-    public String getFechaFin() { return fechaFin; }
-    public void setFechaFin(String fechaFin) { this.fechaFin = fechaFin; }
-
-    public String getSede() { return sede; }
-    public void setSede(String sede) { this.sede = sede; }
-
-    public String getColorFondo() { return colorFondo; }
-    public void setColorFondo(String colorFondo) { this.colorFondo = colorFondo; }
+    public void setNombre_sede(String nombre_sede) {
+        this.nombre_sede = nombre_sede;
+    }
 }

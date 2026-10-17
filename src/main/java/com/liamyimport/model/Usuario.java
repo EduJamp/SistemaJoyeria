@@ -3,19 +3,29 @@ package com.liamyimport.model;
 import com.liamyimport.util.enums.Rol;
 
 public class Usuario {
+    private int idUsuario;
     private String nombreUsuario;
-    private String contraseña;
+    private String password;
     private Rol rol;
     private Empleado empleado;
 
     public Usuario() {
     }
 
-    public Usuario(String nombreUsuario, String contraseña, Rol rol, Empleado empleado) {
+    public Usuario(int idUsuario, String nombreUsuario, String password, Rol rol, Empleado empleado) {
+        this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
-        this.contraseña = contraseña;
+        this.password = password;
         this.rol = rol;
         this.empleado = empleado;
+    }
+
+    public int getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
     public String getNombreUsuario() {
@@ -26,12 +36,12 @@ public class Usuario {
         this.nombreUsuario = nombreUsuario;
     }
 
-    public String getContraseña() {
-        return contraseña;
+    public String getPassword() {
+        return password;
     }
 
-    public void setContraseña(String contraseña) {
-        this.contraseña = contraseña;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Rol getRol() {

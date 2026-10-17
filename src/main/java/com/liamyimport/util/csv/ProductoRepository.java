@@ -38,7 +38,6 @@ public class ProductoRepository extends GenericCsvRepository<Producto, String> {
                 p.getPrecioX6() + "," +
                 p.getPrecioX12() + "," +
                 p.getPrecioPaquete() + "," +
-                p.getCantidad() + "," +
                 p.getEstado().name() + "," + // Convertimos el Enum State a texto
                 idCategoria; // Guardamos solo la llave foránea de la categoría
     }
@@ -63,10 +62,9 @@ public class ProductoRepository extends GenericCsvRepository<Producto, String> {
         p.setPrecioX6(Double.parseDouble(datos[6]));
         p.setPrecioX12(Double.parseDouble(datos[7]));
         p.setPrecioPaquete(Double.parseDouble(datos[8]));
-        p.setCantidad(Integer.parseInt(datos[9]));
 
         // Convertimos el texto nuevamente al Enum State
-        p.setEstado(State.valueOf(datos[10]));
+        p.setEstado(State.valueOf(datos[9]));
 
         // Inicializamos la categoría solo con su ID por el momento
         Categoria categoria = new Categoria();

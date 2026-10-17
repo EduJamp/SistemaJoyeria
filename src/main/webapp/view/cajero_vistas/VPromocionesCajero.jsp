@@ -1,13 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List" %>
-<%@ page import="com.liamyimport.model.Promocion" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
-<%
-boolean esPromociones = "promociones".equals(request.getAttribute("vistaActiva"));
-List<Promocion> listaPromociones = (List<Promocion>) request.getAttribute("promociones");
-  %>
+<c:set var="esPromociones" value="${vistaActiva == 'promociones'}" />
 
-  <section id="view-promociones" class="view-section <%= esPromociones ? "active" : "" %>">
+<section id="view-promociones" class="view-section ${esPromociones ? 'active' : ''}">
 
   <!-- ENCABEZADO ADAPTABLE -->
   <div class="mb-4">
@@ -18,95 +15,137 @@ List<Promocion> listaPromociones = (List<Promocion>) request.getAttribute("promo
   <!-- CONTENEDOR DE PROMOCIONES -->
   <div class="row g-4">
 
-    <%
-    if (listaPromociones != null && !listaPromociones.isEmpty()) {
-    for (Promocion p : listaPromociones) {
+    <c:choose>
+      <c:when test="${not empty promociones}">
+        <c:forEach var="p" items="${promociones}">
 
-    String tipo = p.getTipo() != null ? p.getTipo().toLowerCase() : "";
-    String iconClass = "bi-tag-fill";
+          <!-- LÓGICA DE ÍCONOS DINÁMICOS BASADA EN EL NOMBRE -->
+          <c:set var="nombreLower" value="${fn:toLowerCase(p.nombre())}" />
+          <c:set var="iconClass" value="bi-tag-fill" />
 
-    if (tipo.contains("descuento")) iconClass = "bi-percent";
-    else if (tipo.contains("combo")) iconClass = "bi-box-seam-fill";
-    else if (tipo.contains("frecuente")) iconClass = "bi-star-fill";
-    else if (tipo.contains("relámpago") || tipo.contains("oferta")) iconClass = "bi-lightning-charge-fill";
-    else if (tipo.contains("promoción") || tipo.contains("2 + 1")) iconClass = "bi-cart-check";
-    %>
-    <!-- TARJETA DE PROMOCIÓN -->
-    <div class="col-12 col-md-6 col-xl-4">
-      <div class="card border-0 h-100 overflow-hidden shadow-sm" style="background-color: var(--card-bg); color: var(--text-color);">
+          <c:choose>
+            <c:when test="${fn:contains(nombreLower, 'descuento')}">
+              <c:set var="iconClass" value="bi-percent" />
+            </c:when>
+            <c:when test="${fn:contains(nombreLower, 'combo')}">
+              <c:set var="iconClass" value="bi-box-seam-fill" />
+            </c:when>
+            <c:when test="${fn:contains(nombreLower, 'frecuente')}">
+              <c:set var="iconClass" value="bi-star-fill" />
+            </c:when>
+            <c:when test="${fn:contains(nombreLower, 'relámpago') or fn:contains(nombreLower, 'oferta')}">
+              <c:set var="iconClass" value="bi-lightning-charge-fill" />
+            </c:when>
+            <c:when test="${fn:contains(nombreLower, 'promoción') or fn:contains(nombreLower, '2 + 1')}">
+              <c:set var="iconClass" value="bi-cart-check" />
+            </c:when>
+          </c:choose>
 
-        <!-- CABECERA VISUAL -->
-        <div class="position-relative p-4"
-             style="background: <%= p.getColorFondo() != null ? p.getColorFondo() : "var(--gradient-primary)" %>; min-height: 150px;">
+          <!-- LÓGICA PARA BUSCAR EL NOMBRE DE LA SEDE EN LA LISTA DE SEDES -->
+          <c:set var="nombreSede" value="Todas las sedes" />
+          <c:if test="${p.sede() > 0}">
+            <c:forEach var="s" items="${sedes}">
+              <c:if test="${s.id == p.sede()}">
+                <c:set var="nombreSede" value="${s.nombre}" />
+              </c:if>
+            </c:forEach>
+          </c:if>
 
-        <div class="d-flex justify-content-between align-items-start">
-            <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-semibold shadow-sm">
-                <%= p.getTipo() %>
-            </span>
+          <!-- LÓGICA DEL ESTADO (ENUM) Y COLORES DE BADGE -->
+          <c:set var="nomEstado" value="${p.estado().name()}" />
+          <c:set var="badgeColor" value="bg-success" />
+          <c:set var="textoEstado" value="Activa" />
 
-          <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
-               style="width: 48px; height: 48px;">
-            <i class="bi <%= iconClass %> text-white fs-4"></i>
+          <c:choose>
+            <c:when test="${nomEstado == 'inactiva'}">
+              <c:set var="badgeColor" value="bg-danger" />
+              <c:set var="textoEstado" value="Inactiva" />
+            </c:when>
+            <c:when test="${nomEstado == 'por_vencer'}">
+              <c:set var="badgeColor" value="bg-warning text-dark" />
+              <c:set var="textoEstado" value="Por vencer" />
+            </c:when>
+            <c:when test="${nomEstado == 'programada'}">
+              <c:set var="badgeColor" value="bg-info text-dark" />
+              <c:set var="textoEstado" value="Programada" />
+            </c:when>
+          </c:choose>
+
+          <!-- TARJETA DE PROMOCIÓN -->
+          <div class="col-12 col-md-6 col-xl-4">
+            <div class="card border-0 h-100 overflow-hidden shadow-sm" style="background-color: var(--card-bg); color: var(--text-color);">
+
+              <!-- CABECERA VISUAL -->
+              <div class="position-relative p-4"
+                   style="background: ${not empty p.colorFondo() ? p.colorFondo() : 'var(--gradient-primary)'}; min-height: 150px;">
+
+                <div class="d-flex justify-content-between align-items-start">
+                  <span class="badge bg-white text-dark rounded-pill px-3 py-2 fw-semibold shadow-sm">
+                      -${p.porcentajeDescuento()}% Dscto
+                  </span>
+
+                  <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center"
+                       style="width: 48px; height: 48px;">
+                    <i class="bi ${iconClass} text-white fs-4"></i>
+                  </div>
+                </div>
+
+                <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                  <h4 class="fw-bold title-font mb-1 text-white">
+                    ${p.nombre()}
+                  </h4>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-white opacity-100 fw-semibold">
+                      Sede: ${nombreSede}
+                    </small>
+                    <span class="badge ${badgeColor}">
+                      ${textoEstado}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- CONTENIDO CON TEXTOS DINÁMICOS -->
+              <div class="card-body p-4 d-flex flex-column">
+
+                <!-- Usamos var(--text-color) con un peso equilibrado -->
+                <p class="mb-4" style="color: var(--text-color); opacity: 0.85; font-size: 0.95rem;">
+                  ${p.descripcion()}
+                </p>
+
+                <div class="mt-auto">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-calendar3 text-primary-custom"></i>
+                    <span class="small fw-semibold" style="color: var(--text-color); opacity: 0.8;">
+                          Vigencia: ${p.fechaInicio()} al ${p.fechaFin()}
+                      </span>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle text-primary-custom"></i>
+                    <span class="small" style="color: var(--text-color); opacity: 0.8;">
+                          Aplica restricciones según sede.
+                      </span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
           </div>
+        </c:forEach>
+      </c:when>
+      <c:otherwise>
+        <!-- ESTADO VACÍO -->
+        <div class="col-12 text-center py-5">
+          <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+          <h5 class="mt-3 fw-bold" style="color: var(--text-color);">No hay promociones activas</h5>
+          <p style="color: var(--text-muted);">Por el momento no hay promociones disponibles para mostrar.</p>
         </div>
-
-        <div class="position-absolute bottom-0 start-0 p-4 text-white w-100" style="background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
-          <h4 class="fw-bold title-font mb-1 text-white">
-            <%= p.getNombre() %>
-          </h4>
-          <div class="d-flex justify-content-between align-items-center">
-            <small class="text-white opacity-100 fw-semibold">
-              Sede: <%= p.getSede() %>
-            </small>
-            <span class="badge <%= p.getEstado().equalsIgnoreCase("Activa") ? "bg-success" : (p.getEstado().equalsIgnoreCase("Inactiva") ? "bg-danger" : "bg-warning text-dark") %>">
-            <%= p.getEstado() %>
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- CONTENIDO CON TEXTOS DINÁMICOS -->
-      <div class="card-body p-4 d-flex flex-column">
-
-        <!-- Usamos var(--text-color) con un peso equilibrado para que oscurezca en modo claro y aclare en modo oscuro -->
-        <p class="mb-4" style="color: var(--text-color); opacity: 0.85; font-size: 0.95rem;">
-          <%= p.getDescripcion() %>
-        </p>
-
-        <div class="mt-auto">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-calendar3 text-primary-custom"></i>
-            <span class="small fw-semibold" style="color: var(--text-color); opacity: 0.8;">
-                  Vigencia: <%= p.getFechaInicio() %> - <%= p.getFechaFin() %>
-              </span>
-          </div>
-
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-info-circle text-primary-custom"></i>
-            <span class="small" style="color: var(--text-color); opacity: 0.8;">
-                  Aplica restricciones según sede.
-              </span>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-  <%
-  }
-  } else {
-  %>
-  <div class="col-12 text-center py-5">
-    <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
-    <h5 class="mt-3 fw-bold" style="color: var(--text-color);">No hay promociones activas</h5>
-    <p style="color: var(--text-muted);">Por el momento no hay promociones disponibles para mostrar.</p>
-  </div>
-  <%
-  }
-  %>
+      </c:otherwise>
+    </c:choose>
 
   </div>
 
-  </section>
+</section>

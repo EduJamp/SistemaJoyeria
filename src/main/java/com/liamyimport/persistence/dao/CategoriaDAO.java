@@ -54,13 +54,12 @@ public class CategoriaDAO implements ICategoriaDAO {
     @Override
     public List<Categoria> getCategorias() throws SQLException {
         List<Categoria> categorias = new ArrayList<>();
-        Categoria categoria = new Categoria();
 
-        String sql = "select * from Categoria";
+        String sql = "select id_categoria, nombre, descripcion from Categoria order by id_categoria asc";
 
         try( Connection connection = ConexionBD.getInstancia().getConexion();
-            PreparedStatement ps = connection.prepareStatement( sql );
-            ResultSet rs = ps.executeQuery() ) {
+             PreparedStatement ps = connection.prepareStatement( sql );
+             ResultSet rs = ps.executeQuery() ) {
             while ( rs.next() ) {
                 categorias.add( mapearCategoria( rs ) );
             }

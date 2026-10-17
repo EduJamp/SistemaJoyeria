@@ -1,16 +1,20 @@
 package com.liamyimport.controller;
 
+import com.liamyimport.facade.EmpleadoFacade;
+import com.liamyimport.facade.UsuarioFacade;
+import com.liamyimport.facade.interfaces.IEmpleadoFacade;
+import com.liamyimport.facade.interfaces.IUsuarioFacade;
+import com.liamyimport.model.dto.EmpleadoDTO;
+import com.liamyimport.model.dto.UsuarioDTO;
 import com.liamyimport.util.enums.Rol;
-import com.liamyimport.model.Empleado;
 import com.liamyimport.model.Usuario;
-import com.liamyimport.util.csv.EmpleadoRepository;
-import com.liamyimport.util.csv.UsuarioRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,14 +22,14 @@ import java.util.List;
 @WebServlet("/svusuario")
 public class SvUsuario extends HttpServlet {
 
-    private UsuarioRepository repo;
-    private EmpleadoRepository empleadoRepo;
+    private IUsuarioFacade usuarioFacade;
+    private IEmpleadoFacade empleadoFacade;
 
     @Override
     public void init() throws ServletException {
         super.init();
-        repo = new UsuarioRepository();
-        empleadoRepo = new EmpleadoRepository();
+        usuarioFacade = new UsuarioFacade();
+        empleadoFacade = new EmpleadoFacade();
     }
 
     @Override
@@ -34,16 +38,43 @@ public class SvUsuario extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<Usuario> listaUsuarios = repo.obtenerTodos();
+        String criterio = request.getParameter("criterio");
+        List<UsuarioDTO> listaUsuarios;
 
-        List<Empleado> listaEmpleados = empleadoRepo.obtenerTodos();
+        if (criterio != null && !criterio.trim().isEmpty()) {
+            UsuarioDTO searchDto = new UsuarioDTO();
+            searchDto.setNombreUsuario(criterio);
+            listaUsuarios = usuarioFacade.searchUsers(searchDto);
+        } else {
+            listaUsuarios = usuarioFacade.getAllUsers();
+        }
+
+        // Obtenemos la lista de empleados en formato DTO para el selector (<select>) del modal
+        List<EmpleadoDTO> listaEmpleados = empleadoFacade.getAllEmployees();
 
         request.setAttribute("usuarios", listaUsuarios);
         request.setAttribute("empleados", listaEmpleados);
-
         request.setAttribute("vistaActiva", "usuarios");
 
-        request.getRequestDispatcher("/view/admin_vista.jsp").forward(request, response);
+        // Control de acceso por sesión y redirección (siguiendo el estándar del proyecto)
+        HttpSession session = request.getSession(false);
+        String vistaDestino = "index.jsp";
+
+        if (session != null && session.getAttribute("usuarioLogueado") != null) {
+            Usuario userLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+            switch (userLogueado.getRol()) {
+                case ADMINISTRADOR:
+                    vistaDestino = "view/admin_vista.jsp";
+                    break;
+                default:
+                    vistaDestino = (userLogueado.getRol().name().equals("VENDEDOR")) ? "view/vendedor_vista.jsp" : "view/cajero_vista.jsp";
+                    break;
+            }
+            request.getRequestDispatcher(vistaDestino).forward(request, response);
+        } else {
+            response.sendRedirect(vistaDestino);
+        }
     }
 
     @Override
@@ -76,41 +107,51 @@ public class SvUsuario extends HttpServlet {
     }
 
     private void crearUsuario(HttpServletRequest request) {
-        Usuario u = extraerUsuarioDelFormulario(request);
-        if (u != null) {
-            repo.agregar(u);
+        UsuarioDTO dto = extraerUsuarioDelFormulario(request);
+        if (dto != null) {
+            usuarioFacade.addUser(dto);
         }
     }
 
     private void actualizarUsuario(HttpServletRequest request) {
-        Usuario u = extraerUsuarioDelFormulario(request);
-        if (u != null) {
-            repo.actualizar(u);
+        UsuarioDTO dto = extraerUsuarioDelFormulario(request);
+
+        String idParam = request.getParameter("idUsuario");
+        if (idParam != null && !idParam.isEmpty()) {
+            dto.setIdUsuario(Integer.parseInt(idParam));
+        }
+
+        if (dto != null) {
+            usuarioFacade.updateUser(dto);
         }
     }
 
     private void eliminarUsuario(HttpServletRequest request) {
-        String nombreUsuario = request.getParameter("nombreUsuario");
-        if (nombreUsuario != null && !nombreUsuario.isEmpty()) {
-            repo.eliminar(nombreUsuario);
+        String idParam = request.getParameter("idUsuario");
+        if (idParam != null && !idParam.isEmpty()) {
+            int idUsuario = Integer.parseInt(idParam);
+            usuarioFacade.deleteUser(idUsuario);
         }
     }
 
-    private Usuario extraerUsuarioDelFormulario(HttpServletRequest request) {
+    private UsuarioDTO extraerUsuarioDelFormulario(HttpServletRequest request) {
         try {
-            Usuario u = new Usuario();
-            u.setNombreUsuario(request.getParameter("nombreUsuario"));
-            u.setContraseña(request.getParameter("contrasena"));
-            u.setRol(Rol.valueOf(request.getParameter("rol")));
+            UsuarioDTO dto = new UsuarioDTO();
 
-            String empleadoDocParam = request.getParameter("empleadoId");
-            if (empleadoDocParam != null && !empleadoDocParam.isEmpty()) {
-                int numDoc = Integer.parseInt(empleadoDocParam);
-                Empleado empleadoAsociado = empleadoRepo.buscarPorId(numDoc);
-                u.setEmpleado(empleadoAsociado);
+            dto.setNombreUsuario(request.getParameter("nombreUsuario"));
+            dto.setPassword(request.getParameter("password")); // Alineado con la propiedad 'password' del modelo y DTO
+
+            String rolStr = request.getParameter("rol");
+            if (rolStr != null && !rolStr.isEmpty()) {
+                dto.setRol(Rol.valueOf(rolStr));
             }
 
-            return u;
+            String empleadoIdParam = request.getParameter("idEmpleado");
+            if (empleadoIdParam != null && !empleadoIdParam.isEmpty()) {
+                dto.setIdEmpleado(Integer.parseInt(empleadoIdParam));
+            }
+
+            return dto;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

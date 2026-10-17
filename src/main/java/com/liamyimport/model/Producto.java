@@ -3,6 +3,7 @@ package com.liamyimport.model;
 import com.liamyimport.util.enums.State;
 
 public class Producto {
+    private int id;
     private String codigoBarras;
     private String imagen;
     private String nombre;
@@ -12,16 +13,17 @@ public class Producto {
     private double precioX6;
     private double precioX12;
     private double precioPaquete;
-    private int cantidad;
     private State estado;
     private Categoria categoria;
+    private int cantidad;
 
     public Producto() {
     }
 
-    public Producto(String codigoBarras, String imagen, String nombre, String descripcion, double precioUnidad,
-                    double precioX3, double precioX6, double precioX12, double precioPaquete, int cantidad, State estado,
-                    Categoria categoria) {
+    public Producto(int id, String codigoBarras, String imagen, String nombre, String descripcion,
+                    double precioUnidad, double precioX3, double precioX6, double precioX12, double precioPaquete,
+                    State estado, Categoria categoria) {
+        this.id = id;
         this.codigoBarras = codigoBarras;
         this.imagen = imagen;
         this.nombre = nombre;
@@ -31,9 +33,16 @@ public class Producto {
         this.precioX6 = precioX6;
         this.precioX12 = precioX12;
         this.precioPaquete = precioPaquete;
-        this.cantidad = cantidad;
         this.estado = estado;
         this.categoria = categoria;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getCodigoBarras() {
@@ -108,14 +117,6 @@ public class Producto {
         this.precioPaquete = precioPaquete;
     }
 
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
-
     public State getEstado() {
         return estado;
     }
@@ -130,5 +131,13 @@ public class Producto {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
     }
 }

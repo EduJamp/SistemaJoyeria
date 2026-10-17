@@ -73,15 +73,17 @@
 
             <form class="login-form" id="loginForm" action="${pageContext.request.contextPath}/svlogin" method="POST">
                 <div class="form-group">
-                    <label for="usuario">Usuario</label>
+                    <label for="nombreUsuario">Usuario</label>
                     <div class="input-wrapper">
-                        <input type="text" id="usuario" name="usuario" placeholder="Ingrese usuario" autocomplete="username" required autofocus>
+                        <!-- Actualizado de 'usuario' a 'nombreUsuario' para sincronizar con el backend DTO -->
+                        <input type="text" id="nombreUsuario" name="nombreUsuario" placeholder="Ingrese usuario" autocomplete="username" required autofocus>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
                     <div class="input-wrapper has-icon">
+                        <!-- Actualizado name a 'password' para que coincida exactamente con el DTO -->
                         <input type="password" id="password" name="password" placeholder="Contraseña" autocomplete="current-password" required>
                         <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña">
                             <svg class="eye-icon eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

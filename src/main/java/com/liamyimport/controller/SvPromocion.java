@@ -1,30 +1,37 @@
 package com.liamyimport.controller;
 
-import com.liamyimport.model.Promocion;
-import com.liamyimport.model.Usuario; // Importación necesaria para leer el rol
+import com.liamyimport.facade.PromocionFacade;
+import com.liamyimport.facade.interfaces.IPromocionFacade;
+import com.liamyimport.facade.SedeFacade;
+import com.liamyimport.facade.interfaces.ISedeFacade;
+import com.liamyimport.model.dto.SedeDTO;
+
+import com.liamyimport.model.Usuario;
+import com.liamyimport.model.dto.PromocionDTO;
+import com.liamyimport.util.enums.StatePromotion;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession; // Importación necesaria para la sesión
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 
 @WebServlet("/svpromocion")
 public class SvPromocion extends HttpServlet {
 
-    private static List<Promocion> listaPromociones = new ArrayList<>();
+    private IPromocionFacade promocionFacade;
+    private ISedeFacade sedeFacade;
 
-    static {
-        listaPromociones.add(new Promocion(1, "20% de descuento", "Descuento", "Activa", "Obtén un 20% de descuento en productos seleccionados durante el periodo promocional.", "01/09/2026", "30/09/2026", "Todas las sedes", "var(--gradient-primary)"));
-        listaPromociones.add(new Promocion(2, "2 + 1 Gratis", "Promoción", "Activa", "Compra dos unidades y recibe una tercera unidad completamente gratis.", "05/09/2026", "20/09/2026", "Sede Principal", "linear-gradient(135deg,#6366f1,#8b5cf6)"));
-        listaPromociones.add(new Promocion(3, "Hasta 30% OFF", "Descuento", "Por vencer", "Descuentos de hasta 30% en productos seleccionados de la tienda.", "10/09/2026", "15/09/2026", "Todas las sedes", "linear-gradient(135deg,#f59e0b,#f97316)"));
-        listaPromociones.add(new Promocion(4, "15% Cliente frecuente", "Cliente frecuente", "Activa", "Beneficio exclusivo para clientes que cumplan las condiciones establecidas.", "01/09/2026", "30/09/2026", "Todas las sedes", "linear-gradient(135deg,#10b981,#059669)"));
-        listaPromociones.add(new Promocion(5, "Combo especial", "Combo", "Inactiva", "Conjunto de productos seleccionados disponibles a un precio promocional.", "08/09/2026", "28/09/2026", "Sede Principal", "linear-gradient(135deg,#ec4899,#db2777)"));
-        listaPromociones.add(new Promocion(6, "Oferta especial", "Oferta relámpago", "Programada", "Promoción especial programada para incentivar las ventas durante una fecha determinada.", "15/09/2026", "25/09/2026", "Todas las sedes", "linear-gradient(135deg,#0ea5e9,#2563eb)"));
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        promocionFacade = new PromocionFacade();
+        sedeFacade = new SedeFacade();
     }
 
     @Override
@@ -32,6 +39,19 @@ public class SvPromocion extends HttpServlet {
             throws ServletException, IOException {
 
         request.setAttribute("vistaActiva", "promociones");
+
+        String criterio = request.getParameter("criterio");
+        List<PromocionDTO> listaPromociones;
+
+        if (criterio != null && !criterio.trim().isEmpty()) {
+            PromocionDTO dtoBusqueda = new PromocionDTO(0, criterio, null, null, null, null, 0.0, null, 0);
+            listaPromociones = promocionFacade.searchPromocion(dtoBusqueda);
+        } else {
+            listaPromociones = promocionFacade.getAllPromociones();
+        }
+
+        List<SedeDTO> listaSedes = sedeFacade.getSedes();
+        request.setAttribute("sedes", listaSedes);
         request.setAttribute("promociones", listaPromociones);
 
         HttpSession session = request.getSession(false);
@@ -51,7 +71,6 @@ public class SvPromocion extends HttpServlet {
                     vistaDestino = "view/cajero_vista.jsp";
                     break;
             }
-
             request.getRequestDispatcher(vistaDestino).forward(request, response);
         } else {
             response.sendRedirect(vistaDestino);
@@ -64,28 +83,88 @@ public class SvPromocion extends HttpServlet {
 
         String accion = request.getParameter("accion");
 
-        if ("crear".equals(accion)) {
-            String nombre = request.getParameter("nombre");
-            String tipo = request.getParameter("tipo");
-            String sede = request.getParameter("sede");
-            String fechaInicio = request.getParameter("fechaInicio");
-            String fechaFin = request.getParameter("fechaFin");
-            String descripcion = request.getParameter("descripcion");
+        if (accion != null) {
+            switch (accion) {
+                case "crear":
+                    crearPromocion(request);
+                    break;
+                case "actualizar":
+                    actualizarPromocion(request);
+                    break;
+                case "eliminar":
+                    eliminarPromocion(request);
+                    break;
+            }
+        }
+        response.sendRedirect("svpromocion");
+    }
 
-            String estadoSwitch = request.getParameter("promocionActiva");
-            String estado = (estadoSwitch != null && estadoSwitch.equals("on")) ? "Activa" : "Inactiva";
+    private void crearPromocion(HttpServletRequest request) {
+        String nombre = request.getParameter("nombre");
+        String descripcion = request.getParameter("descripcion");
+        String fechaInicioStr = request.getParameter("fechaInicio");
+        String fechaFinStr = request.getParameter("fechaFin");
 
-            String colorDefecto = "linear-gradient(135deg, #475569, #1e293b)";
+        String porcentajeStr = request.getParameter("porcentajeDescuento");
+        String colorFondo = request.getParameter("colorFondo");
+        String sedeStr = request.getParameter("sede");
+        String estadoSwitch = request.getParameter("promocionActiva");
 
-            int nuevoId = listaPromociones.size() + 1;
-            Promocion p = new Promocion(nuevoId, nombre, tipo, estado, descripcion, fechaInicio, fechaFin, sede, colorDefecto);
+        StatePromotion estado = (estadoSwitch != null && estadoSwitch.equals("on")) ? StatePromotion.activo : StatePromotion.inactivo;
 
-            listaPromociones.add(p);
-        } else if ("eliminar".equals(accion)) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            listaPromociones.removeIf(p -> p.getId() == id);
+        LocalDate fechaInicio = (fechaInicioStr != null && !fechaInicioStr.isEmpty()) ? LocalDate.parse(fechaInicioStr) : null;
+        LocalDate fechaFin = (fechaFinStr != null && !fechaFinStr.isEmpty()) ? LocalDate.parse(fechaFinStr) : null;
+
+        double porcentaje = (porcentajeStr != null && !porcentajeStr.isEmpty()) ? Double.parseDouble(porcentajeStr) : 0.0;
+        int sede = (sedeStr != null && !sedeStr.isEmpty()) ? Integer.parseInt(sedeStr) : 0;
+
+        if (colorFondo == null || colorFondo.trim().isEmpty()) {
+            colorFondo = "linear-gradient(135deg, #475569, #1e293b)";
         }
 
-        response.sendRedirect("svpromocion");
+        PromocionDTO dto = new PromocionDTO(0, nombre, estado, descripcion, fechaInicio, fechaFin, porcentaje, colorFondo, sede);
+
+        promocionFacade.addPromocion(dto);
+    }
+
+    private void actualizarPromocion(HttpServletRequest request) {
+        String idStr = request.getParameter("id");
+        if (idStr != null && !idStr.isEmpty()) {
+            int id = Integer.parseInt(idStr);
+
+            String nombre = request.getParameter("nombre");
+            String descripcion = request.getParameter("descripcion");
+            String fechaInicioStr = request.getParameter("fechaInicio");
+            String fechaFinStr = request.getParameter("fechaFin");
+
+            String porcentajeStr = request.getParameter("porcentajeDescuento");
+            String colorFondo = request.getParameter("colorFondo");
+            String sedeStr = request.getParameter("sede");
+            String estadoSwitch = request.getParameter("promocionActiva");
+
+            StatePromotion estado = (estadoSwitch != null && estadoSwitch.equals("on")) ? StatePromotion.activo : StatePromotion.inactivo;
+
+            LocalDate fechaInicio = (fechaInicioStr != null && !fechaInicioStr.isEmpty()) ? LocalDate.parse(fechaInicioStr) : null;
+            LocalDate fechaFin = (fechaFinStr != null && !fechaFinStr.isEmpty()) ? LocalDate.parse(fechaFinStr) : null;
+
+            double porcentaje = (porcentajeStr != null && !porcentajeStr.isEmpty()) ? Double.parseDouble(porcentajeStr) : 0.0;
+            int sede = (sedeStr != null && !sedeStr.isEmpty()) ? Integer.parseInt(sedeStr) : 0;
+
+            if (colorFondo == null || colorFondo.trim().isEmpty()) {
+                colorFondo = "linear-gradient(135deg, #475569, #1e293b)";
+            }
+
+            PromocionDTO dto = new PromocionDTO(id, nombre, estado, descripcion, fechaInicio, fechaFin, porcentaje, colorFondo, sede);
+
+            promocionFacade.updatePromocion(dto);
+        }
+    }
+
+    private void eliminarPromocion(HttpServletRequest request) {
+        String idStr = request.getParameter("id");
+        if (idStr != null && !idStr.isEmpty()) {
+            int id = Integer.parseInt(idStr);
+            promocionFacade.deletePromocion(id);
+        }
     }
 }

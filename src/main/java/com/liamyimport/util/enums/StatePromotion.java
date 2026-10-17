@@ -1,8 +1,8 @@
 package com.liamyimport.util.enums;
 
 public enum StatePromotion {
-    activa,
-    inactiva,
+    activo,
+    inactivo,
     por_vencer,
     programada
 }

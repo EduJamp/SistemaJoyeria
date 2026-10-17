@@ -1,68 +1,122 @@
 package com.liamyimport.model;
 
-import com.liamyimport.util.enums.InventoryMovementType;
 
 public class Inventario {
-    private String codigoBarras;
-    private String producto;
-    private String sede;
-    private String vendedor;
+    private int idInventario;
     private int stockSistema;
-    private int contado;
-    private int diferencia;
+    private int stockFisico;
+    private int faltantes;
+    private int sobrantes;
     private double impacto;
-    private InventoryMovementType estado;
+    private String estado;
     private String fechaConteo;
+    private int idSede;
+    private int idEmpleado;
+    private int idProducto;
 
     public Inventario() {
     }
 
-    public Inventario(String codigoBarras, String producto, String sede, String vendedor, int stockSistema, int contado, double impacto, InventoryMovementType estado, String fechaConteo) {
-        this.codigoBarras = codigoBarras;
-        this.producto = producto;
-        this.sede = sede;
-        this.vendedor = vendedor;
+    public Inventario(int idInventario, int stockSistema, int stockFisico, int faltantes, int sobrantes,
+                      double impacto, String estado, String fechaConteo, int idSede, int idEmpleado, int idProducto) {
+        this.idInventario = idInventario;
         this.stockSistema = stockSistema;
-        this.contado = contado;
-        this.diferencia = contado - stockSistema;
+        this.stockFisico = stockFisico;
+        this.faltantes = faltantes;
+        this.sobrantes = sobrantes;
         this.impacto = impacto;
         this.estado = estado;
         this.fechaConteo = fechaConteo;
+        this.idSede = idSede;
+        this.idEmpleado = idEmpleado;
+        this.idProducto = idProducto;
     }
 
-    public String getCodigoBarras() { return codigoBarras; }
-    public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
+    public int getIdInventario() {
+        return idInventario;
+    }
 
-    public String getProducto() { return producto; }
-    public void setProducto(String producto) { this.producto = producto; }
+    public void setIdInventario(int idInventario) {
+        this.idInventario = idInventario;
+    }
 
-    public String getSede() { return sede; }
-    public void setSede(String sede) { this.sede = sede; }
+    public int getStockSistema() {
+        return stockSistema;
+    }
 
-    public String getVendedor() { return vendedor; }
-    public void setVendedor(String vendedor) { this.vendedor = vendedor; }
-
-    public int getStockSistema() { return stockSistema; }
     public void setStockSistema(int stockSistema) {
         this.stockSistema = stockSistema;
-        this.diferencia = this.contado - this.stockSistema;
     }
 
-    public int getContado() { return contado; }
-    public void setContado(int contado) {
-        this.contado = contado;
-        this.diferencia = this.contado - this.stockSistema;
+    public int getStockFisico() {
+        return stockFisico;
     }
 
-    public int getDiferencia() { return diferencia; }
-    public void setDiferencia(int diferencia) { this.diferencia = diferencia; }
+    public void setStockFisico(int stockFisico) {
+        this.stockFisico = stockFisico;
+    }
 
-    public double getImpacto() { return impacto; }
-    public void setImpacto(double impacto) { this.impacto = impacto; }
+    public int getFaltantes() {
+        return faltantes;
+    }
 
-    public InventoryMovementType getEstado() { return estado; }
-    public void setEstado(InventoryMovementType estado) { this.estado = estado; }
+    public void setFaltantes(int faltantes) {
+        this.faltantes = faltantes;
+    }
 
-    public String getFechaConteo() { return fechaConteo; }
-    public void setFechaConteo(String fechaConteo) { this.fechaConteo = fechaConteo; }
+    public int getSobrantes() {
+        return sobrantes;
+    }
+
+    public void setSobrantes(int sobrantes) {
+        this.sobrantes = sobrantes;
+    }
+
+    public double getImpacto() {
+        return impacto;
+    }
+
+    public void setImpacto(double impacto) {
+        this.impacto = impacto;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getFechaConteo() {
+        return fechaConteo;
+    }
+
+    public void setFechaConteo(String fechaConteo) {
+        this.fechaConteo = fechaConteo;
+    }
+
+    public int getIdSede() {
+        return idSede;
+    }
+
+    public void setIdSede(int idSede) {
+        this.idSede = idSede;
+    }
+
+    public int getIdEmpleado() {
+        return idEmpleado;
+    }
+
+    public void setIdEmpleado(int idEmpleado) {
+        this.idEmpleado = idEmpleado;
+    }
+
+    public int getIdProducto() {
+        return idProducto;
+    }
+
+    public void setIdProducto(int idProducto) {
+        this.idProducto = idProducto;
+    }
 }
